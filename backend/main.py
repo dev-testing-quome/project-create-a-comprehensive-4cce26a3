@@ -1,38 +1,29 @@
 import uvicorn
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 import os
 from sqlalchemy.orm import Session
 
-from .database import SessionLocal, engine
-from . import models
-from . import schemas
-from .routers import users, appointments, messages, medical_records, prescriptions, billing
+from backend.database import SessionLocal, engine
+from backend.routers import users, appointments, messages, medical_records, prescriptions, billing
+from backend.models import Base
 
-models.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-origins = ["*"]  # Update with your allowed origins in production
-
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=['*'],  # Replace with your allowed origins in production
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_methods=['*'],
+    allow_headers=['*'],
 )
 
-app.include_router(users.router)
-app.include_router(appointments.router)
-app.include_router(messages.router)
-app.include_router(medical_records.router)
-app.include_router(prescriptions.router)
-app.include_router(billing.router)
-
-
+# Dependency
 def get_db():
     db = SessionLocal()
     try:
@@ -40,25 +31,37 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}
+# Routers
+app.include_router(users.router)
+app.include_router(appointments.router)
+app.include_router(messages.router)
+app.include_router(medical_records.router)
+app.include_router(prescriptions.router)
+app.include_router(billing.router)
 
+# Health check
+@app.get('/health')
+def health_check():
+    return {'status': 'ok'}
+
+# Static Files
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
-    
+
     @app.get("/{{"file_path:path}}")
     async def serve_frontend(file_path: str):
-        if file_path.startswith("api/") or file_path.startswith("static/") :
+        if file_path.startswith("api/") or file_path == "":
             return None  # Let API routes handle it
         static_file = os.path.join("static", file_path)
         if os.path.isfile(static_file):
             return FileResponse(static_file)
-        return FileResponse("static/index.html")  # SPA routing
+        return FileResponse("static/index.html")
 
+#Exception Handling
 @app.exception_handler(HTTPException)
 def http_exception_handler(request: Request, exc: HTTPException):
-    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+    return PlainTextResponse(str(exc.detail), status_code=exc.status_code)
 
-
-# Run with: uvicorn backend.main:app --reload
+# Start the server
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

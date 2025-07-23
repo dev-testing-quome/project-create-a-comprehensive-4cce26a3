@@ -1,7 +1,7 @@
 fastapi==0.96.0
-uvicorn[standard]==0.22.0
-SQLAlchemy==2.0.22
+uvicorn==0.22.0
+SQLAlchemy==2.0.18
 python-multipart==0.0.6
+pypi-client==1.0.0
+PyJWT==2.7.0
 passlib==1.7.4
-PyMySQL==1.0.3
-pypi-client==0.1.1

@@ -2,69 +2,95 @@ from typing import Optional
 from pydantic import BaseModel, Field
 from datetime import datetime
 
-class UserCreate(BaseModel):
+class UserBase(BaseModel):
     username: str
     password: str
     email: str
     first_name: str
     last_name: str
 
-class User(BaseModel):
+class UserCreate(UserBase):
+    pass
+
+class User(UserBase):
     id: int
-    username: str
-    email: str
-    first_name: str
-    last_name: str
     created_at: datetime
     updated_at: datetime
-
     class Config:
         orm_mode = True
 
-class AppointmentCreate(BaseModel):
+class AppointmentBase(BaseModel):
     patient_id: int
-    provider_id: int
-    date_time: datetime
-    description: str
+    doctor_id: int
+    datetime: datetime
+    description: Optional[str] = None
 
-class Appointment(BaseModel):
+class AppointmentCreate(AppointmentBase):
+    pass
+
+class Appointment(AppointmentBase):
     id: int
-    patient_id: int
-    provider_id: int
-    date_time: datetime
-    description: str
     created_at: datetime
     updated_at: datetime
-
     class Config:
         orm_mode = True
 
-class MessageCreate(BaseModel):
+class MessageBase(BaseModel):
     sender_id: int
     recipient_id: int
     content: str
 
-class Message(BaseModel):
-    id: int
-    sender_id: int
-    recipient_id: int
-    content: str
-    timestamp: datetime
+class MessageCreate(MessageBase):
+    pass
 
+class Message(MessageBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
     class Config:
         orm_mode = True
 
-class MedicalRecordCreate(BaseModel):
+class MedicalRecordBase(BaseModel):
     patient_id: int
     document: str
 
-class MedicalRecord(BaseModel):
+class MedicalRecordCreate(MedicalRecordBase):
+    pass
+
+class MedicalRecord(MedicalRecordBase):
     id: int
-    patient_id: int
-    document: str
-    upload_date: datetime
-
+    created_at: datetime
+    updated_at: datetime
     class Config:
         orm_mode = True
 
-# Add schemas for Prescriptions and Billing as needed
+class PrescriptionBase(BaseModel):
+    patient_id: int
+    medication: str
+    dosage: str
+    instructions: Optional[str] = None
+
+class PrescriptionCreate(PrescriptionBase):
+    pass
+
+class Prescription(PrescriptionBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    class Config:
+        orm_mode = True
+
+class BillingRecordBase(BaseModel):
+    patient_id: int
+    amount: int
+    description: str
+
+class BillingRecordCreate(BillingRecordBase):
+    pass
+
+class BillingRecord(BillingRecordBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    class Config:
+        orm_mode = True
