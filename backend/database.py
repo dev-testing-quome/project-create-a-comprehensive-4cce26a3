@@ -1,15 +1,12 @@
 import os
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./database.db")
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./database.db") # Use environment variable for production
 
-engin = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False}  # For sqlite
-)
+engine = create_engine(DATABASE_URL, echo=True)
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()

@@ -1,21 +1,33 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from ..database import get_db
-from ..schemas import UserCreate, User
-from ..models import User as UserModel
-from passlib.context import CryptContext
-
-pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+from schemas import UserCreate, User, UserUpdate
+from database import SessionLocal
+from services import users_service
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
 
-@router.post("", status_code=status.HTTP_201_CREATED, response_model=User)
-def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    hashed_password = pwd_context.hash(user.password)
-    db_user = UserModel(username=user.username, password=hashed_password, email=user.email, first_name=user.first_name, last_name=user.last_name)
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-# Add other user-related routes (login, etc.) as needed
+@router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)
+def create_user(user: UserCreate, db: Session = Depends(get_db)):
+    return users_service.create_user(db, user)
+
+@router.get("/{user_id}", response_model=User)
+def get_user(user_id: int, db: Session = Depends(get_db)):
+    user = users_service.get_user(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+@router.put("/{user_id}", response_model=User)
+def update_user(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
+    db_user = users_service.update_user(db, user_id, user)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user

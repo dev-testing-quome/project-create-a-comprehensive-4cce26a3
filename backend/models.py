@@ -10,7 +10,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
     password = Column(String)
-    email = Column(String, unique=True, index=True)
+    email = Column(String, unique=True)
     first_name = Column(String)
     last_name = Column(String)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
@@ -23,8 +23,8 @@ class Appointment(Base):
     __tablename__ = 'appointments'
     id = Column(Integer, primary_key=True, index=True)
     patient_id = Column(Integer, ForeignKey('users.id'))
-    doctor_id = Column(Integer, ForeignKey('users.id')) # Assuming doctors are also users
-    datetime = Column(DateTime)
+    provider_id = Column(Integer, ForeignKey('users.id')) # Assuming providers are also users
+    date_time = Column(DateTime)
     description = Column(Text)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
@@ -36,34 +36,6 @@ class Message(Base):
     sender_id = Column(Integer, ForeignKey('users.id'))
     recipient_id = Column(Integer, ForeignKey('users.id'))
     content = Column(Text)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
     sender = relationship("User", back_populates="messages", foreign_keys=[sender_id])
     recipient = relationship("User", back_populates="messages_received", foreign_keys=[recipient_id])
-
-class MedicalRecord(Base):
-    __tablename__ = 'medical_records'
-    id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(Integer, ForeignKey('users.id'))
-    document = Column(Text)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-
-class Prescription(Base):
-    __tablename__ = 'prescriptions'
-    id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(Integer, ForeignKey('users.id'))
-    medication = Column(String)
-    dosage = Column(String)
-    instructions = Column(Text)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-
-class BillingRecord(Base):
-    __tablename__ = 'billing_records'
-    id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(Integer, ForeignKey('users.id'))
-    amount = Column(Integer)
-    description = Column(Text)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)

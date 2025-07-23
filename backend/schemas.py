@@ -1,96 +1,58 @@
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr
 from datetime import datetime
 
-class UserBase(BaseModel):
+class UserCreate(BaseModel):
     username: str
     password: str
-    email: str
+    email: EmailStr
     first_name: str
     last_name: str
 
-class UserCreate(UserBase):
-    pass
+class UserUpdate(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[EmailStr] = None
 
-class User(UserBase):
+class User(BaseModel):
     id: int
+    username: str
+    email: EmailStr
+    first_name: str
+    last_name: str
     created_at: datetime
     updated_at: datetime
+
     class Config:
         orm_mode = True
 
-class AppointmentBase(BaseModel):
+class AppointmentCreate(BaseModel):
+    provider_id: int
+    date_time: datetime
+    description: str
+
+class Appointment(BaseModel):
+    id: int
     patient_id: int
-    doctor_id: int
-    datetime: datetime
-    description: Optional[str] = None
-
-class AppointmentCreate(AppointmentBase):
-    pass
-
-class Appointment(AppointmentBase):
-    id: int
+    provider_id: int
+    date_time: datetime
+    description: str
     created_at: datetime
     updated_at: datetime
+
     class Config:
         orm_mode = True
 
-class MessageBase(BaseModel):
-    sender_id: int
+class MessageCreate(BaseModel):
     recipient_id: int
     content: str
 
-class MessageCreate(MessageBase):
-    pass
-
-class Message(MessageBase):
+class Message(BaseModel):
     id: int
-    created_at: datetime
-    updated_at: datetime
-    class Config:
-        orm_mode = True
+    sender_id: int
+    recipient_id: int
+    content: str
+    timestamp: datetime
 
-class MedicalRecordBase(BaseModel):
-    patient_id: int
-    document: str
-
-class MedicalRecordCreate(MedicalRecordBase):
-    pass
-
-class MedicalRecord(MedicalRecordBase):
-    id: int
-    created_at: datetime
-    updated_at: datetime
-    class Config:
-        orm_mode = True
-
-class PrescriptionBase(BaseModel):
-    patient_id: int
-    medication: str
-    dosage: str
-    instructions: Optional[str] = None
-
-class PrescriptionCreate(PrescriptionBase):
-    pass
-
-class Prescription(PrescriptionBase):
-    id: int
-    created_at: datetime
-    updated_at: datetime
-    class Config:
-        orm_mode = True
-
-class BillingRecordBase(BaseModel):
-    patient_id: int
-    amount: int
-    description: str
-
-class BillingRecordCreate(BillingRecordBase):
-    pass
-
-class BillingRecord(BillingRecordBase):
-    id: int
-    created_at: datetime
-    updated_at: datetime
     class Config:
         orm_mode = True

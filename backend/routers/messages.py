@@ -1,17 +1,23 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from ..database import get_db
-from ..schemas import MessageCreate, Message
-from ..models import Message as MessageModel
+from schemas import MessageCreate, Message
+from database import SessionLocal
+from services import messages_service
 
 router = APIRouter(prefix="/api/messages", tags=["Messages"])
 
-@router.post("", response_model=Message)
-def create_message(message: MessageCreate, db: Session = Depends(get_db)):
-    db_message = MessageModel(**message.dict())
-    db.add(db_message)
-    db.commit()
-    db.refresh(db_message)
-    return db_message
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-# Add other message-related routes (CRUD) as needed
+@router.post("/", response_model=Message)
+def create_message(message: MessageCreate, db: Session = Depends(get_db)):
+    return messages_service.create_message(db, message)
+
+@router.get("/{message_id}", response_model=Message)
+def get_message(message_id: int, db: Session = Depends(get_db)):
+    return messages_service.get_message(db, message_id)
